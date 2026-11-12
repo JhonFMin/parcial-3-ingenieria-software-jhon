@@ -1,50 +1,73 @@
-# envios.py
+"""Calculo de envios de acuerdo con los requisitos R1-R8 de Jhon."""
+
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+
+
 CONFIG = {
-    "L1": 3,
-    "L2": 10,
-    "RECARGO_RURAL": 0.15,
-    "RECARGO_NACIONAL": 0.40,
-    "DESC_VIP": 0.15,
-    "RECARGO_FINDE": 2000,
+    "L1": Decimal("3"),
+    "L2": Decimal("10"),
+    "PMAX": Decimal("50"),
+    "TARIFA_TRAMO_1": Decimal("6000"),
+    "TARIFA_TRAMO_2": Decimal("9000"),
+    "COSTO_KG_EXCEDENTE": Decimal("800"),
+    "RECARGO_RURAL": Decimal("0.15"),
+    "RECARGO_NACIONAL": Decimal("0.40"),
+    "DESC_FRECUENTE": Decimal("0.05"),
+    "DESC_VIP": Decimal("0.15"),
+    "DESC_CUPON": Decimal("0.10"),
+    "RECARGO_FINDE": Decimal("2000"),
+    "COSTO_MINIMO": Decimal("5000"),
 }
 
 
-def calc(p, z, c, d, cup=None, flag=False):
-    if p <= 0 or p > 50:
-        raise ValueError("peso invalido")
+def _validar_peso(peso):
+    try:
+        peso = Decimal(str(peso))
+    except (InvalidOperation, ValueError, TypeError):
+        raise ValueError("peso inválido") from None
+    if not peso.is_finite() or peso <= 0 or peso > CONFIG["PMAX"]:
+        raise ValueError("peso inválido")
+    return peso
 
-    if p <= CONFIG["L1"]:
-        t = 6000
-    elif p <= CONFIG["L2"]:
-        t = 9000
-    else:
-        t = 9000 + (p - CONFIG["L2"]) * 800
 
-    if z == "urbana":
-        t = t
-    elif z == "rural":
-        t = t + t * CONFIG["RECARGO_RURAL"]
+def _tarifa_base(peso):
+    if peso <= CONFIG["L1"]:
+        return CONFIG["TARIFA_TRAMO_1"]
+    if peso <= CONFIG["L2"]:
+        return CONFIG["TARIFA_TRAMO_2"]
+    return CONFIG["TARIFA_TRAMO_2"] + (peso - CONFIG["L2"]) * CONFIG["COSTO_KG_EXCEDENTE"]
+
+
+def calc(p, z, c, d, cup=None):
+    """Devuelve el costo final del envio en pesos colombianos."""
+    peso = _validar_peso(p)
+
+    if z not in ("urbana", "rural", "nacional"):
+        raise ValueError("zona inválida")
+    if not isinstance(d, int) or isinstance(d, bool) or d < 1 or d > 7:
+        raise ValueError("día inválido")
+    if cup is not None and cup != "ENVIO10":
+        raise ValueError("cupón desconocido")
+
+    total = _tarifa_base(peso)
+
+    if z == "rural":
+        total *= Decimal("1") + CONFIG["RECARGO_RURAL"]
     elif z == "nacional":
-        t = t + t * CONFIG["RECARGO_NACIONAL"]
+        total *= Decimal("1") + CONFIG["RECARGO_NACIONAL"]
 
-    # fin de semana
-    if d > 6:
-        t = t + CONFIG["RECARGO_FINDE"]
-
+    # Los descuentos de cliente y cupon se aplican en secuencia.
     if c == "frecuente":
-        t = t - t * 0.05
+        total *= Decimal("1") - CONFIG["DESC_FRECUENTE"]
+    elif c == "vip":
+        total *= Decimal("1") - CONFIG["DESC_VIP"]
 
-    if c == "vip":
-        t = t - t * CONFIG["DESC_VIP"]
+    if cup == "ENVIO10":
+        total *= Decimal("1") - CONFIG["DESC_CUPON"]
 
-    if cup != None:
-        if cup == "ENVIO10":
-            t = t - t * 0.10
+    # Para E = 9 impar, el recargo del fin de semana va despues de descuentos.
+    if d in (6, 7):
+        total += CONFIG["RECARGO_FINDE"]
 
-    if t < 5000:
-        t = 5000
-
-    if flag:
-        print("costo:", t)
-
-    return int(t / 100) * 100
+    total = max(total, CONFIG["COSTO_MINIMO"])
+    return int(total.quantize(Decimal("1E2"), rounding=ROUND_HALF_UP))
