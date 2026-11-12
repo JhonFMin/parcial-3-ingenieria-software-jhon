@@ -143,3 +143,135 @@ Criterios de aceptacion:
 
 
 
+
+
+#### **Parte 2 — Plan de pruebas**
+
+
+
+###### **2.1 Alcance**
+
+
+
+El plan verifica el calculo del costo de envio de EnvíaYa de acuerdo con los requisitos R1 a R8 de la Parte 1. Se probaran el peso, la zona, el dia, el tipo de cliente, el cupon, la tarifa base, los recargos, los descuentos, el costo minimo y el redondeo.
+
+
+
+En esta parte, las pruebas se ejecutaran primero contra el codigo heredado para registrar los defectos observados. Despues de corregir el codigo, se repetiran los mismos casos como pruebas de regresion.
+
+
+
+###### **2.2 Niveles de prueba**
+
+
+
+| Nivel | Aplicacion en este proyecto |
+
+|---|---|
+
+| Unidad | Probar la funcion de calculo con entradas individuales y comprobar el resultado o error esperado. |
+
+| Integracion | Comprobar que la funcion de calculo usa correctamente la configuracion personalizada de Jhon y las reglas de zona, cliente   y cupon. |
+
+| Sistema | Probar el flujo completo de ingreso de peso, zona, cliente, dia y cupon hasta obtener el costo final. |
+
+| Aceptacion | Comprobar que los resultados cumplen las reglas R1 a R8 de la especificacion personalizada. |
+
+
+
+###### **2.3 Estrategia de pruebas**
+
+
+
+Se usaran particiones de equivalencia, valores limite, tablas de decision y pruebas de caja blanca.
+
+
+
+Se probaran entradas validas e invalidas para cada dato. Para el peso se revisaran los limites 0, L1 = 3 kg, L2 = 10 kg y PMAX = 50 kg. Tambien se probaran las combinaciones de cliente, cupon y fin de semana que afectan el orden de los descuentos y recargos.
+
+
+
+Los resultados esperados se calcularan manualmente antes de ejecutar los casos. La suite se ejecutara contra el codigo heredado y, despues de corregir los defectos, contra la version refactorizada.
+
+
+
+###### 2.4 Ambiente y herramientas
+
+
+
+* Sistema operativo: Windows.
+* Lenguaje: Python.
+* Framework de pruebas: pytest.
+* Medicion de cobertura: pytest-cov.
+* Control de versiones: Git y GitHub.
+* Archivo bajo prueba: envios.py.
+* Archivo con el codigo heredado: se conservara separado para comparar su comportamiento.
+
+
+
+###### 2.5 Roles
+
+
+
+| Rol | Responsabilidad |
+
+|---|---|
+
+| Estudiante y responsable de pruebas | Jhon Faber Mindiola Atencio: define los casos, calcula los resultados esperados, automatiza las pruebas, registra defectos y corrige el codigo. |
+
+| Revisor de requisitos | Verifica que los casos y resultados correspondan a la especificacion personalizada. |
+
+| Usuario de aceptacion | Comprueba que el costo final siga las reglas de negocio de EnvíaYa. |
+
+
+
+###### 2.6 Riesgos y mitigaciones
+
+
+
+| Riesgo | Mitigacion |
+
+|---|---|
+
+| Usar parametros de otro estudiante | Verificar que el informe y CONFIG usen el codigo 0182410099. |
+
+| Calcular mal el orden de recargos y descuentos | Aplicar el orden definido por B = 1 y E = 9, y mostrar calculos manuales. |
+
+| No probar exactamente los limites de peso | Incluir casos en 0, 3, 10 y 50 kg, ademas de valores inmediatamente inferiores o superiores. |
+
+| Corregir el codigo antes de registrar los defectos heredados | Ejecutar primero las pruebas contra la version heredada y guardar sus resultados. |
+
+| Cambiar una regla al refactorizar | Ejecutar de nuevo la misma suite como regresion despues de cada cambio. |
+
+| No tener evidencia de pruebas o historial Git | Guardar capturas y hacer commits al completar cada avance real. |
+
+
+
+###### **2.7 Criterios de entrada**
+
+
+
+\- La especificacion R1 a R8 esta escrita y personalizada para Jhon.
+
+\- Los parametros de CONFIG corresponden al codigo 0182410099.
+
+\- Los casos de prueba tienen entradas y resultados esperados calculados.
+
+\- El codigo heredado esta disponible para la primera ejecucion.
+
+
+
+###### **2.8 Criterios de salida**
+
+
+
+\- Todos los casos planificados fueron ejecutados contra el codigo heredado.
+
+\- Los defectos observados quedaron registrados con pasos para reproducirlos.
+
+\- Despues de las correcciones, se repitieron los mismos casos.
+
+\- Los resultados finales y la cobertura quedaron documentados.
+
+\- Se conservaron las evidencias necesarias para el informe y la sustentacion.
+
