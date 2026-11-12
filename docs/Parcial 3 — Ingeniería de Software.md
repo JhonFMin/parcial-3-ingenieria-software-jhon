@@ -133,10 +133,10 @@ Criterios de aceptacion:
 |R2|Historia de usuario 3|P10, P11, P12, P13, P16, P17|
 |R3|Historia de usuario 1|P04, P05, P06, P07|
 |R4|Historia de usuario 1|P10, P14, P15|
-|R5|Historia de usuario 2|P16, P18, P25|
-|R6|Historia de usuario 2|P19, P20, P21, P22, P23|
+|R5|Historia de usuario 2|P16, P18, P25, P32|
+|R6|Historia de usuario 2|P19, P20, P21, P22, P23, P32|
 |R7|Historia de usuario 2|P24|
-|R8|Historia de usuario 3|P07, P25, P26|
+|R8|Historia de usuario 3|P07, P25, P26, P32|
 #### **Parte 2 — Plan de pruebas**
 
 
@@ -334,6 +334,11 @@ Las entradas se escriben en este orden: peso; zona; cliente; dia; cupon. La matr
 | P29 | R3 | 9,99 kg; urbana; normal; d5; sin cupon | $9.000 | Limite L2 |
 | P30 | R3, R8 | 10,01 kg; urbana; normal; d5; sin cupon | Base $9.008; final $9.000 | Limite L2 |
 | P31 | R3, R8 | 49,99 kg; urbana; normal; d5; sin cupon | Base $40.992; final $41.000 | Limite PMAX |
+| P32 | R5, R6, R8 | 4 kg; urbana; vip; d7; sin cupon | Base $9.000; VIP $7.650; mas $2.000 = $9.650; final $9.700 | Orden del recargo y descuento |
+Caso P32
+
+La tarifa base es $9.000. Descuento VIP: $9.000 × 0,85 = $7.650. El dia 7 es domingo, por lo que se agregan $2.000 despues del descuento: $9.650. Los $50 se redondean hacia arriba. Resultado esperado: $9.700.
+
 ###### **3.5 Calculos detallados de resultados esperados**
 
 
@@ -504,3 +509,120 @@ El enunciado no define que debe ocurrir si el tipo de cliente no es normal, frec
 
 Los resultados de esta matriz se calcularon segun R1–R8 para Jhon. Al ejecutar los mismos casos contra el codigo heredado, algunos fallaran; esos resultados obtenidos se registraran despues en la Parte 5 como defectos.
 
+
+#### **Parte 4 — Diseño de casos de caja blanca**
+
+##### **4.1 Grafo de flujo del codigo heredado**
+
+El grafo representa las decisiones de `calc` en `envios_heredado.py`. La ruta comienza validando el peso, selecciona un tramo, procesa la zona, el dia, el cliente, el cupon, el minimo y la opcion de impresion.
+
+```mermaid
+flowchart TD
+    A[Inicio] --> B{peso <= 0?}
+    B -- Si --> E[Error de peso]
+    B -- No --> C{peso > PMAX?}
+    C -- Si --> E
+    C -- No --> D{peso <= L1?}
+    D -- Si --> T1[Tarifa 1]
+    D -- No --> F{peso <= L2?}
+    F -- Si --> T2[Tarifa 2]
+    F -- No --> T3[Tarifa proporcional]
+    T1 --> Z1{zona urbana?}
+    T2 --> Z1
+    T3 --> Z1
+    Z1 -- Si --> W{dia > 6?}
+    Z1 -- No --> Z2{zona rural?}
+    Z2 -- Si --> R[Aplicar recargo rural]
+    Z2 -- No --> Z3{zona nacional?}
+    Z3 -- Si --> N[Aplicar recargo nacional]
+    Z3 -- No --> W
+    R --> W
+    N --> W
+    W -- Si --> FDS[Sumar recargo de fin de semana]
+    W -- No --> C1{cliente frecuente?}
+    FDS --> C1
+    C1 -- Si --> DF[Aplicar 5 por ciento]
+    C1 -- No --> C2{cliente VIP?}
+    DF --> C2
+    C2 -- Si --> DV[Aplicar 15 por ciento]
+    C2 -- No --> CU{hay cupon?}
+    DV --> CU
+    CU -- No --> MIN{total < minimo?}
+    CU -- Si --> CV{cupon ENVIO10?}
+    CV -- Si --> DC[Aplicar 10 por ciento]
+    CV -- No --> MIN
+    DC --> MIN
+    MIN -- Si --> M[Asignar minimo]
+    MIN -- No --> FL{flag verdadero?}
+    M --> FL
+    FL -- Si --> IMP[Imprimir costo]
+    FL -- No --> RET[Redondear y retornar]
+    IMP --> RET
+    E --> FIN[Fin]
+    RET --> FIN
+```
+
+##### **4.2 Complejidad ciclomática**
+
+Se cuentan 14 predicados binarios, separando las dos condiciones de validacion del peso (`peso <= 0` y `peso > PMAX`). La complejidad ciclomática es `V(G) = P + 1 = 14 + 1 = 15`. Se requieren 15 caminos independientes para recorrer las salidas de las decisiones del metodo heredado.
+
+##### **4.3 Caminos independientes**
+
+La columna observado se obtuvo ejecutando cada recorrido sobre `envios_heredado.py`. Las dos diferencias entre esperado y observado se conservaron como defectos, no se cambiaron los resultados esperados.
+
+| ID | Entrada o rama principal | Esperado | Observado en heredado |
+| --- | --- | --- | --- |
+| WB01 | Peso primer tramo, urbana, normal, dia habil | $6.000 | $6.000 |
+| WB02 | Peso 0 kg | Error de peso | ValueError: peso invalido |
+| WB03 | Peso mayor que PMAX | Error de peso | ValueError: peso invalido |
+| WB04 | Peso del segundo tramo | $9.000 | $9.000 |
+| WB05 | Peso mayor que L2 | $9.000 tras redondear | $9.000 |
+| WB06 | Zona rural | $6.900 | $6.900 |
+| WB07 | Zona nacional | $8.400 | $8.400 |
+| WB08 | Zona fuera del catalogo | Error de zona | $6.000; no genera error |
+| WB09 | Domingo sin descuento | $8.000 | $8.000 |
+| WB10 | Cliente frecuente | $5.700 | $5.700 |
+| WB11 | Cliente VIP | $5.100 | $5.100 |
+| WB12 | Cupon desconocido | Error de cupon | $6.000; ignora el cupon |
+| WB13 | Cupon ENVIO10 | $5.400 | $5.400 |
+| WB14 | Descuentos dejan un valor menor al minimo | $5.000 | $5.000 |
+| WB15 | Rama `flag=True` | Retorna $6.000 e imprime el diagnostico | Retorna $6.000 e imprime `costo: 6000` |
+
+##### **4.4 Cobertura de sentencias y ramas**
+
+Al ejecutar juntos los 32 casos de caja negra y los 15 recorridos de caja blanca sobre la version heredada, Coverage.py registro 29 de 29 sentencias y 26 de 26 ramas: 100 % en ambas medidas. Esta cobertura indica que el codigo fue recorrido; no significa que los resultados cumplan los requisitos. La ejecucion tuvo 21 casos fallidos.
+
+#### **Parte 5 — Automatizacion, ejecucion y defectos**
+
+##### **5.1 Suite y ambiente de ejecucion**
+
+La suite automatizada contiene 32 casos de caja negra (`registro_heredado.py`) y 15 recorridos de caja blanca (`caja_blanca_heredado.py`). El ambiente utilizado fue Windows, Python 3.15.2, pytest 9.2.0, pytest-cov 7.1.0 y Coverage.py 7.17.2. El comando de ejecucion conjunta fue:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest pruebas/registro_heredado.py pruebas/caja_blanca_heredado.py --cov=envios_heredado --cov-branch --cov-report=term-missing -q
+```
+
+##### **5.2 Registro de defectos del codigo heredado**
+
+| ID | Defecto observado | Requisito | Severidad / prioridad | Casos relacionados |
+| --- | --- | --- | --- | --- |
+| DEF-01 | El mensaje de peso no incluye la tilde exigida | R1 | Baja / P3 | P01, P02, P03 |
+| DEF-02 | Una zona desconocida recibe una tarifa | R2 | Alta / P1 | P10, WB08 |
+| DEF-03 | Se aceptan dias fuera del rango 1–7 | R2 | Alta / P1 | P11, P12, P13 |
+| DEF-04 | El sabado no recibe el recargo de fin de semana | R5 | Alta / P1 | P18, P25, P27 |
+| DEF-05 | El recargo del domingo se aplica antes del descuento | R5, R6 | Media / P2 | P32 |
+| DEF-06 | El resultado se trunca en vez de redondearse al centenar mas cercano | R8 | Media / P2 | P07, P14, P19, P20, P22, P23, P31 |
+| DEF-07 | Un cupon desconocido se acepta en vez de generar error | R7 | Alta / P1 | P24, WB12 |
+
+##### **5.3 Metricas de la ejecucion inicial**
+
+| Metrica | Resultado | Base de calculo |
+| --- | --- | --- |
+| Casos ejecutados | 47 | 32 de caja negra + 15 de caja blanca |
+| Casos aprobados | 26 (55,32 %) | 26 / 47 × 100 |
+| Casos fallidos | 21 (44,68 %) | Resultados distintos de la especificacion |
+| Defectos unicos registrados | 7 | Causas distintas agrupadas por requisito |
+| Cobertura de sentencias | 100 % (29/29) | Version heredada, ejecucion conjunta |
+| Cobertura de ramas | 100 % (26/26) | Version heredada, ejecucion conjunta |
+
+Los fallos del codigo heredado quedaron reproducidos antes de la correccion. El 100 % de cobertura no contradice los fallos: una prueba puede recorrer una rama y comprobar que el resultado de esa rama es incorrecto.
