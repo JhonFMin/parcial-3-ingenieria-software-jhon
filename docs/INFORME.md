@@ -667,7 +667,10 @@ La versión heredada se ejecutó con 47 casos: 26 aprobados, 21 fallidos y siete
 | --- | --- |
 | `v1.0.0` (`f22e2ba`) | Identifica el código heredado personalizado, conservado en `envios_heredado.py` |
 | `v2.0.0` (`14ad270`) | Identifica la versión corregida de R1–R8 antes de CAMBIO=1 |
-| `fix/DEF-01` a `fix/DEF-07` | Ramas requeridas para los siete defectos registrados |`r`n| `refactor/estrategia` | Rama requerida para la refactorizacion con Strategy |`r`n| `test/suite` | Rama requerida para la suite automatizada |`r`n| `feature/cambio-empresarial` | Rama de trabajo para la solicitud empresarial |
+| `fix/DEF-01` a `fix/DEF-07` | Ramas requeridas para los siete defectos registrados 
+| `refactor/estrategia` | Rama requerida para la refactorizacion con Strategy 
+| `test/suite` | Rama requerida para la suite automatizada 
+| `feature/cambio-empresarial` | Rama de trabajo para la solicitud empresarial |
 | `v2.1.0` | Versión menor que incorpora CAMBIO=1 sin cambiar la firma pública `calc(p, z, c, d, cup=None)` |
 
 La implementacion R1-R8 y las pruebas quedaron consolidadas en `581933d`; por eso las ramas `fix/DEF-*`, `refactor/estrategia` y `test/suite` apuntan a ese commit, que ya forma parte de `main`. No se reescribio el historial para simular siete commits de correccion separados. La solicitud empresarial si conserva pruebas primero (`8db9081`) y luego codigo (`3eef8c9`), integrada mediante el merge `991a6c5`.
@@ -709,4 +712,5 @@ La selección se obtiene de `(A + C) mod 3 = (4 + 0) mod 3 = 1`. Para el cliente
 | SC-04 | 11 kg, nacional, empresarial, domingo, ENVIO10 | Base $9.800; × 0,88 × 0,90 + $2.000 = $9.761,60 | $9.800 |
 
 Las cuatro pruebas SC-01 a SC-04 y los 33 casos anteriores aprobaron: 37 de 37. La cobertura final fue 100 % de sentencias y ramas. El caso adicional de peso no numérico comprueba que la entrada inválida se convierta en `ValueError`.
+
 
