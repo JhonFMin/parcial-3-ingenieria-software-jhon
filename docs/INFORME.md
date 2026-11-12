@@ -667,9 +667,9 @@ La versión heredada se ejecutó con 47 casos: 26 aprobados, 21 fallidos y siete
 | --- | --- |
 | `v1.0.0` (`f22e2ba`) | Identifica el código heredado personalizado, conservado en `envios_heredado.py` |
 | `v2.0.0` (`14ad270`) | Identifica la versión corregida de R1–R8 antes de CAMBIO=1 |
-| `fix/DEF-01` a `fix/DEF-07` | Ramas requeridas para los siete defectos registrados 
-| `refactor/estrategia` | Rama requerida para la refactorizacion con Strategy 
-| `test/suite` | Rama requerida para la suite automatizada 
+| `fix/DEF-01` a `fix/DEF-07` | Ramas requeridas para los siete defectos registrados |
+| `refactor/estrategia` | Rama requerida para la refactorizacion con Strategy |
+| `test/suite` | Rama requerida para la suite automatizada |
 | `feature/cambio-empresarial` | Rama de trabajo para la solicitud empresarial |
 | `v2.1.0` | Versión menor que incorpora CAMBIO=1 sin cambiar la firma pública `calc(p, z, c, d, cup=None)` |
 
