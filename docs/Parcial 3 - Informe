@@ -606,7 +606,7 @@ La suite automatizada contiene 32 casos de caja negra (`registro_heredado.py`) y
 
 | ID | Defecto observado | Requisito | Severidad / prioridad | Casos relacionados |
 | --- | --- | --- | --- | --- |
-| DEF-01 | El mensaje de peso no incluye la tilde exigida | R1 | Baja / P3 | P01, P02, P03 |
+| DEF-01 | El mensaje de peso no incluye la tilde exigida | R1 | Baja / P3 | P01, P02 |
 | DEF-02 | Una zona desconocida recibe una tarifa | R2 | Alta / P1 | P10, WB08 |
 | DEF-03 | Se aceptan dias fuera del rango 1–7 | R2 | Alta / P1 | P11, P12, P13 |
 | DEF-04 | El sabado no recibe el recargo de fin de semana | R5 | Alta / P1 | P18, P25, P27 |
