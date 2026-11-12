@@ -13,7 +13,7 @@ from envios import calc
         (10.01, "rural", 5, None, 7900),
         (11, "nacional", 7, "ENVIO10", 9800),
     ],
-    ids=["empresarial-hasta-L2", "empresarial-en-L2", "empresarial-sobre-L2", "empresarial-cupon-fin-de-semana"],
+    ids=["SC-01", "SC-02", "SC-03", "SC-04"],
 )
 def test_cambio_empresarial(peso, zona, dia, cupon, esperado):
     assert calc(peso, zona, "empresarial", dia, cupon) == esperado

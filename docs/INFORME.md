@@ -626,3 +626,86 @@ La suite automatizada contiene 32 casos de caja negra (`registro_heredado.py`) y
 | Cobertura de ramas | 100 % (26/26) | Version heredada, ejecucion conjunta |
 
 Los fallos del codigo heredado quedaron reproducidos antes de la correccion. El 100 % de cobertura no contradice los fallos: una prueba puede recorrer una rama y comprobar que el resultado de esa rama es incorrecto.
+
+#### **Parte 6 — Mantenimiento y refactorización**
+
+##### **6.1 Malos olores y deuda técnica del código heredado**
+
+| Mal olor | Evidencia en `envios_heredado.py` | Deuda técnica |
+| --- | --- | --- |
+| Método largo | `calc` valida datos, calcula tarifa, aplica recargos, descuentos, mínimo, impresión y redondeo | Un cambio de regla obliga a revisar responsabilidades distintas en una sola función |
+| Nombres crípticos | `p`, `z`, `c`, `d`, `cup`, `t` y `flag` | El lector debe deducir el significado de cada dato |
+| Números mágicos | Tarifas, límites, tasas, mínimo y unidad de redondeo aparecen dentro del cálculo | Se dificulta actualizar una regla sin omitir otros lugares |
+| Condicional por zona | La función contiene ramas separadas para urbana, rural y nacional | Agregar una estrategia de zona aumenta las ramas del método principal |
+| Bandera de diagnóstico | `flag` hace que la función de negocio imprima en la consola | El cálculo y la presentación quedan acoplados |
+| Aritmética binaria | Los descuentos y recargos usan `float` | Los importes decimales pueden acumular errores antes de redondear |
+
+##### **6.2 Cambios realizados y tipo de mantenimiento**
+
+| Cambio | Tipo de mantenimiento | Motivo |
+| --- | --- | --- |
+| Validar peso, zona, día y cupón | Correctivo | Corregir DEF-01, DEF-02, DEF-03 y DEF-07 |
+| Aplicar el recargo después de descuentos y también el sábado | Correctivo | Corregir DEF-04 y DEF-05 |
+| Redondear con `Decimal` y `ROUND_HALF_UP` | Correctivo | Corregir DEF-06 sin perder precisión decimal |
+| Extraer validación, tarifa base, selección de zona y total | Perfectivo | Separar responsabilidades para facilitar lectura y cambio |
+| Introducir el patrón Strategy para la zona | Perfectivo | Seleccionar una política de zona sin acumular condicionales en `calc` |
+| Centralizar las reglas en `CONFIG` | Preventivo | Reducir la posibilidad de valores inconsistentes |
+
+##### **6.3 Patrón Strategy para los recargos de zona**
+
+`EstrategiaZona` define la operación `aplicar`. `SinRecargo` conserva el importe urbano y permite representar la exención empresarial. `RecargoPorcentual` aplica la tasa rural o nacional. `ESTRATEGIAS_ZONA` relaciona cada zona válida con su estrategia. La función `calc` selecciona la estrategia adecuada y mantiene el resto del cálculo en el mismo orden de R1–R8.
+
+##### **6.4 Regresión y comparación de métricas**
+
+La versión heredada se ejecutó con 47 casos: 26 aprobados, 21 fallidos y siete causas de defecto. La versión corregida base aprobó los 32 casos R1–R8. Después del cambio empresarial, la suite final contiene 37 pruebas: 32 de caja negra, cuatro del cambio y una validación adicional de peso no numérico. Las 37 pasaron; Coverage.py midió 55/55 sentencias y 18/18 ramas, ambas al 100 %.
+
+#### **Parte 7 — Control de versiones y publicación**
+
+##### **7.1 Versiones, ramas e integración**
+
+| Referencia | Propósito |
+| --- | --- |
+| `v1.0.0` (`f22e2ba`) | Identifica el código heredado personalizado, conservado en `envios_heredado.py` |
+| `v2.0.0` (`14ad270`) | Identifica la versión corregida de R1–R8 antes de CAMBIO=1 |
+| `feature/cambio-empresarial` | Rama de trabajo para la solicitud empresarial |
+| `v2.1.0` | Versión menor que incorpora CAMBIO=1 sin cambiar la firma pública `calc(p, z, c, d, cup=None)` |
+
+En `feature/cambio-empresarial` se registraron primero las pruebas (`8db9081`) y luego la implementación (`3eef8c9`). La rama se integra a `main` después de aprobar regresión. El historial se conserva con commits reales y fechas de ejecución reales.
+
+##### **7.2 Changelog y publicación**
+
+Los cambios resumidos por versión están en `CHANGELOG.md`. `v1.0.0` conserva la línea base, `v2.0.0` incorpora las correcciones y refactorización R1–R8, y `v2.1.0` agrega la regla empresarial. Las instrucciones para repetir las pruebas y ver el historial son:
+
+```powershell
+uv pip install --python .venv\Scripts\python.exe -r requirements.txt
+.\.venv\Scripts\python.exe -m pytest --cov=envios --cov-branch --cov-report=term-missing -q
+git log --oneline --graph --all
+```
+
+La salida de `git log --oneline --graph --all` se conserva como evidencia del historial integrado.
+
+#### **Parte 8 — Solicitud de cambio y análisis de impacto**
+
+##### **8.1 Solicitud personalizada CAMBIO=1**
+
+La selección se obtiene de `(A + C) mod 3 = (4 + 0) mod 3 = 1`. Para el cliente `empresarial` se aplica un descuento del 12 %. Si su peso es estrictamente mayor que L2 = 10 kg, no se aplica recargo de zona. Con peso igual a 10 kg, el recargo de zona sí se aplica. Se conservan las validaciones, el orden del cupón, el recargo de fin de semana, el mínimo y el redondeo de R1–R8.
+
+##### **8.2 Impacto sobre requisitos y pruebas**
+
+| Elemento | Impacto | Verificación |
+| --- | --- | --- |
+| R4, recargo de zona | Empresarial con peso > 10 kg queda exento del recargo rural o nacional | SC-03 y SC-04 |
+| R6, descuento de cliente | Se añade descuento empresarial del 12 % | SC-01 a SC-04 |
+| R5 y R8 | El recargo de fin de semana sigue después de descuentos y el total usa el redondeo existente | SC-04 |
+| Compatibilidad | Se mantiene la firma `calc(p, z, c, d, cup=None)` y el comportamiento de los clientes anteriores | Regresión de 32 casos y suite completa |
+
+##### **8.3 Cálculos del cambio**
+
+| Caso | Entradas | Cálculo esperado | Resultado |
+| --- | --- | --- | --- |
+| SC-01 | 4 kg, rural, empresarial, día 5 | $9.000 × 1,15 × 0,88 = $9.108 | $9.100 |
+| SC-02 | 10 kg, rural, empresarial, día 5 | El peso igual a L2 conserva recargo: $9.000 × 1,15 × 0,88 = $9.108 | $9.100 |
+| SC-03 | 10,01 kg, rural, empresarial, día 5 | Base $9.008; exención de zona; $9.008 × 0,88 = $7.927,04 | $7.900 |
+| SC-04 | 11 kg, nacional, empresarial, domingo, ENVIO10 | Base $9.800; × 0,88 × 0,90 + $2.000 = $9.761,60 | $9.800 |
+
+Las cuatro pruebas SC-01 a SC-04 y los 33 casos anteriores aprobaron: 37 de 37. La cobertura final fue 100 % de sentencias y ramas. El caso adicional de peso no numérico comprueba que la entrada inválida se convierta en `ValueError`.
