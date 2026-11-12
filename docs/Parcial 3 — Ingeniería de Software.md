@@ -16,11 +16,8 @@ Codigo estudiantil: 0182410099
 
 
 |A|B|C|D|E|F|PMAX|L1|L2|RR|RN|V|S|CAMBIO|
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |4|1|0|0|9|9|50 kg|3 kg|10 kg|15 %|40 %|15 %|$2.000|1|
-
-
-
 ###### **1.2 Especificacion del calculo del costo**
 
 
@@ -131,7 +128,7 @@ Criterios de aceptacion:
 
 
 |Requisito|Historia de usuario|Casos de prueba asociados|
-|-|-|-|
+| --- | --- | --- |
 |R1|Historia de usuario 1|P01, P02, P03|
 |R2|Historia de usuario 3|P10, P11, P12, P13, P16, P17|
 |R3|Historia de usuario 1|P04, P05, P06, P07|
@@ -140,11 +137,6 @@ Criterios de aceptacion:
 |R6|Historia de usuario 2|P19, P20, P21, P22, P23|
 |R7|Historia de usuario 2|P24|
 |R8|Historia de usuario 3|P07, P25, P26|
-
-
-
-
-
 #### **Parte 2 — Plan de pruebas**
 
 
@@ -166,19 +158,11 @@ En esta parte, las pruebas se ejecutaran primero contra el codigo heredado para 
 
 
 | Nivel | Aplicacion en este proyecto |
-
-|---|---|
-
+| --- | --- |
 | Unidad | Probar la funcion de calculo con entradas individuales y comprobar el resultado o error esperado. |
-
 | Integracion | Comprobar que la funcion de calculo usa correctamente la configuracion personalizada de Jhon y las reglas de zona, cliente   y cupon. |
-
 | Sistema | Probar el flujo completo de ingreso de peso, zona, cliente, dia y cupon hasta obtener el costo final. |
-
 | Aceptacion | Comprobar que los resultados cumplen las reglas R1 a R8 de la especificacion personalizada. |
-
-
-
 ###### **2.3 Estrategia de pruebas**
 
 
@@ -214,39 +198,22 @@ Los resultados esperados se calcularan manualmente antes de ejecutar los casos. 
 
 
 | Rol | Responsabilidad |
-
-|---|---|
-
+| --- | --- |
 | Estudiante y responsable de pruebas | Jhon Faber Mindiola Atencio: define los casos, calcula los resultados esperados, automatiza las pruebas, registra defectos y corrige el codigo. |
-
 | Revisor de requisitos | Verifica que los casos y resultados correspondan a la especificacion personalizada. |
-
 | Usuario de aceptacion | Comprueba que el costo final siga las reglas de negocio de EnvíaYa. |
-
-
-
 ###### 2.6 Riesgos y mitigaciones
 
 
 
 | Riesgo | Mitigacion |
-
-|---|---|
-
+| --- | --- |
 | Usar parametros de otro estudiante | Verificar que el informe y CONFIG usen el codigo 0182410099. |
-
 | Calcular mal el orden de recargos y descuentos | Aplicar el orden definido por B = 1 y E = 9, y mostrar calculos manuales. |
-
 | No probar exactamente los limites de peso | Incluir casos en 0, 3, 10 y 50 kg, ademas de valores inmediatamente inferiores o superiores. |
-
 | Corregir el codigo antes de registrar los defectos heredados | Ejecutar primero las pruebas contra la version heredada y guardar sus resultados. |
-
 | Cambiar una regla al refactorizar | Ejecutar de nuevo la misma suite como regresion despues de cada cambio. |
-
 | No tener evidencia de pruebas o historial Git | Guardar capturas y hacer commits al completar cada avance real. |
-
-
-
 ###### **2.7 Criterios de entrada**
 
 
@@ -283,21 +250,12 @@ Una particion de equivalencia agrupa entradas que deberian recibir el mismo trat
 
 
 | Entrada | Particiones validas | Particiones invalidas o especiales |
-
-|---|---|---|
-
+| --- | --- | --- |
 | Peso | 0 < peso ≤ 3 kg; 3 kg < peso ≤ 10 kg; 10 kg < peso ≤ 50 kg | Peso ≤ 0 y peso > 50 kg. Debe producirse el error de peso indicado en R1. |
-
 | Zona | urbana, rural y nacional | Cualquier valor distinto de esas tres zonas. R2 exige un error. |
-
 | Cliente | normal, frecuente y vip | Un tipo distinto de esos tres queda fuera del dominio descrito. El enunciado no define que resultado debe producir; se registrara esta ambiguedad y no se asignara un resultado esperado como si fuera una regla del profesor. |
-
 | Dia | Dias habiles del 1 al 5; sabado 6; domingo 7 | Valores menores que 1 y mayores que 7. R2 exige un error. |
-
 | Cupon | Sin cupon; cupon ENVIO10 | Cualquier cupon desconocido. Como F = 9 es impar, R7 exige un error. |
-
-
-
 ###### **3.2 Valores limite del peso**
 
 
@@ -307,19 +265,11 @@ El valor L1 es 3 kg y se incluye en el primer tramo porque D = 0 es par. L2 es 1
 
 
 | Limite | Por debajo | En el limite | Por encima |
-
-|---|---|---|---|
-
+| --- | --- | --- | --- |
 | 0 kg | -0,01 kg — P02 | 0 kg — P01 | 0,01 kg — P08 |
-
 | L1 = 3 kg | 2,99 kg — P28 | 3 kg — P04 | 3,01 kg — P05 |
-
 | L2 = 10 kg | 9,99 kg — P29 | 10 kg — P06 | 10,01 kg — P30 |
-
 | PMAX = 50 kg | 49,99 kg — P31 | 50 kg — P09 | 50,01 kg — P03 |
-
-
-
 P30 permite revisar el peso inmediatamente superior a L2. Su incremento de tarifa base es de $8, pero al redondear a la centena mas cercana el resultado urbano sigue siendo $9.000. Por eso tambien se incluye P07, cuyo peso permite observar el cobro proporcional en el resultado final.
 
 
@@ -333,109 +283,57 @@ A representa la tarifa base despues de aplicar el recargo de zona. Como B = 1 es
 
 
 | Cliente | Cupon | Dias 1–5 | Dias 6–7 |
-
-|---|---|---|---|
-
+| --- | --- | --- | --- |
 | Normal | Ausente | A | A + $2.000 |
-
 | Normal | ENVIO10 | A × 0,90 | A × 0,90 + $2.000 |
-
 | Normal | Desconocido | Error | Error |
-
 | Frecuente | Ausente | A × 0,95 | A × 0,95 + $2.000 |
-
 | Frecuente | ENVIO10 | A × 0,95 × 0,90 | A × 0,95 × 0,90 + $2.000 |
-
 | Frecuente | Desconocido | Error | Error |
-
 | VIP | Ausente | A × 0,85 | A × 0,85 + $2.000 |
-
 | VIP | ENVIO10 | A × 0,85 × 0,90 | A × 0,85 × 0,90 + $2.000 |
-
 | VIP | Desconocido | Error | Error |
-
-
-
 Despues de aplicar la regla correspondiente, el costo minimo es $5.000 y el resultado se redondea al multiplo de $100 mas cercano. Los $50 se redondean hacia arriba.
 
 
 
 ###### **3.4 Matriz de casos de prueba**
 
+Las entradas se escriben en este orden: peso; zona; cliente; dia; cupon. La matriz muestra resultados esperados concisos; los calculos completos aparecen en la seccion 3.5.
 
-
-Las entradas aparecen en este orden: peso, zona, cliente, dia y cupon. Los resultados esperados se calcularon con los parametros de Jhon.
-
-
-
-| ID | Requisito | Entradas | Resultado esperado calculado a mano | Tecnica |
-
-|---|---|---|---|---|
-
-| P01 | R1 | 0 kg, urbana, normal, dia 3, sin cupon | Error de peso. R1 especifica el mensaje “peso inválido”. | Limite |
-
-| P02 | R1 | -0,01 kg, urbana, normal, dia 3, sin cupon | Error de peso. | Limite |
-
-| P03 | R1 | 50,01 kg, urbana, normal, dia 3, sin cupon | Error de peso. | Limite |
-
-| P04 | R3 | 3 kg, urbana, normal, dia 5, sin cupon | $6.000 | Limite L1 |
-
-| P05 | R3 | 3,01 kg, urbana, normal, dia 5, sin cupon | $9.000 | Limite L1 |
-
-| P06 | R3 | 10 kg, urbana, normal, dia 5, sin cupon | $9.000 | Limite L2 |
-
-| P07 | R3, R8 | 11,3125 kg, urbana, normal, dia 5, sin cupon | Base: $9.000 + (1,3125 × $800) = $10.050. Resultado: $10.100. | Tarifa proporcional y redondeo |
-
-| P08 | R1, R3 | 0,01 kg, urbana, normal, dia 5, sin cupon | $6.000 | Particion valida |
-
-| P09 | R1, R3 | 50 kg, urbana, normal, dia 5, sin cupon | $41.000 | Limite PMAX |
-
-| P10 | R2 | 2 kg, costera, normal, dia 3, sin cupon | Error de zona | Particion invalida |
-
-| P11 | R2 | 2 kg, rural, normal, dia 0, sin cupon | Error de dia | Limite |
-
-| P12 | R2 | 2 kg, rural, normal, dia 8, sin cupon | Error de dia | Limite |
-
-| P13 | R2 | 2 kg, urbana, normal, dia -1, sin cupon | Error de dia | Particion invalida |
-
-| P14 | R4 | 4 kg, rural, normal, dia 5, sin cupon | $9.000 × 1,15 = $10.350. Resultado: $10.400. | Particion de zona |
-
-| P15 | R4 | 4 kg, nacional, normal, dia 5, sin cupon | $9.000 × 1,40 = $12.600. Resultado: $12.600. | Particion de zona |
-
-| P16 | R2, R5 | 4 kg, urbana, normal, dia 5, sin cupon | $9.000. No hay recargo de fin de semana. | Particion de dia |
-
-| P17 | R2, R5 | 4 kg, urbana, normal, dia 7, sin cupon | $9.000 + $2.000 = $11.000. | Domingo |
-
-| P18 | R5 | 4 kg, urbana, normal, dia 6, sin cupon | $9.000 + $2.000 = $11.000. | Sabado |
-
-| P19 | R6 | 4 kg, urbana, frecuente, dia 5, sin cupon | $9.000 × 0,95 = $8.550. Resultado: $8.600. | Particion de cliente |
-
-| P20 | R6 | 4 kg, urbana, vip, dia 5, sin cupon | $9.000 × 0,85 = $7.650. Resultado: $7.700. | Particion de cliente |
-
-| P21 | R6 | 4 kg, urbana, normal, dia 5, ENVIO10 | $9.000 × 0,90 = $8.100. | Particion de cupon |
-
-| P22 | R6 | 4 kg, urbana, vip, dia 5, ENVIO10 | $9.000 × 0,85 × 0,90 = $6.885. Resultado: $6.900. | Tabla de decision |
-
-| P23 | R6 | 4 kg, urbana, frecuente, dia 5, ENVIO10 | $9.000 × 0,95 × 0,90 = $7.695. Resultado: $7.700. | Tabla de decision |
-
-| P24 | R7 | 4 kg, urbana, normal, dia 5, OTRO | Error por cupon desconocido, porque F = 9 es impar. | Particion especial |
-
-| P25 | R5, R8 | 4 kg, urbana, vip, dia 6, sin cupon | $9.000 × 0,85 + $2.000 = $9.650. Resultado: $9.700. | Orden y redondeo |
-
-| P26 | R6, R8 | 2 kg, urbana, vip, dia 5, ENVIO10 | $6.000 × 0,85 × 0,90 = $4.590. Se aplica el minimo: $5.000. | Minimo |
-
-| P27 | R4–R8 | 4 kg, rural, vip, dia 6, ENVIO10 | $9.000 × 1,15 × 0,85 × 0,90 + $2.000 = $9.917,75. Resultado: $9.900. | Tabla de decision |
-
-| P28 | R3 | 2,99 kg, urbana, normal, dia 5, sin cupon | $6.000 | Limite L1 |
-
-| P29 | R3 | 9,99 kg, urbana, normal, dia 5, sin cupon | $9.000 | Limite L2 |
-
-| P30 | R3, R8 | 10,01 kg, urbana, normal, dia 5, sin cupon | Base: $9.000 + (0,01 × $800) = $9.008. Resultado redondeado: $9.000. | Limite L2 |
-
-| P31 | R3, R8 | 49,99 kg, urbana, normal, dia 5, sin cupon | Base: $9.000 + (39,99 × $800) = $40.992. Resultado: $41.000. | Limite PMAX |
-
-
-
+| ID | Req. | Entradas | Resultado esperado | Tecnica |
+| --- | --- | --- | --- | --- |
+| P01 | R1 | 0 kg; urbana; normal; d3; sin cupon | Error: peso invalido (R1 indica "peso inválido") | Limite |
+| P02 | R1 | -0,01 kg; urbana; normal; d3; sin cupon | Error de peso | Limite |
+| P03 | R1 | 50,01 kg; urbana; normal; d3; sin cupon | Error de peso | Limite |
+| P04 | R3 | 3 kg; urbana; normal; d5; sin cupon | $6.000 | Limite L1 |
+| P05 | R3 | 3,01 kg; urbana; normal; d5; sin cupon | $9.000 | Limite L1 |
+| P06 | R3 | 10 kg; urbana; normal; d5; sin cupon | $9.000 | Limite L2 |
+| P07 | R3, R8 | 11,3125 kg; urbana; normal; d5; sin cupon | Base $10.050; final $10.100 | Proporcional y redondeo |
+| P08 | R1, R3 | 0,01 kg; urbana; normal; d5; sin cupon | $6.000 | Particion valida |
+| P09 | R1, R3 | 50 kg; urbana; normal; d5; sin cupon | $41.000 | Limite PMAX |
+| P10 | R2 | 2 kg; costera; normal; d3; sin cupon | Error de zona | Particion invalida |
+| P11 | R2 | 2 kg; rural; normal; d0; sin cupon | Error de dia | Limite |
+| P12 | R2 | 2 kg; rural; normal; d8; sin cupon | Error de dia | Limite |
+| P13 | R2 | 2 kg; urbana; normal; d-1; sin cupon | Error de dia | Particion invalida |
+| P14 | R4 | 4 kg; rural; normal; d5; sin cupon | $10.350 -> $10.400 | Zona rural |
+| P15 | R4 | 4 kg; nacional; normal; d5; sin cupon | $12.600 | Zona nacional |
+| P16 | R2, R5 | 4 kg; urbana; normal; d5; sin cupon | $9.000 | Dia habil |
+| P17 | R2, R5 | 4 kg; urbana; normal; d7; sin cupon | $11.000 | Domingo |
+| P18 | R5 | 4 kg; urbana; normal; d6; sin cupon | $11.000 | Sabado |
+| P19 | R6 | 4 kg; urbana; frecuente; d5; sin cupon | $8.550 -> $8.600 | Cliente frecuente |
+| P20 | R6 | 4 kg; urbana; vip; d5; sin cupon | $7.650 -> $7.700 | Cliente VIP |
+| P21 | R6 | 4 kg; urbana; normal; d5; ENVIO10 | $8.100 | Cupon valido |
+| P22 | R6 | 4 kg; urbana; vip; d5; ENVIO10 | $6.885 -> $6.900 | Cliente y cupon |
+| P23 | R6 | 4 kg; urbana; frecuente; d5; ENVIO10 | $7.695 -> $7.700 | Cliente y cupon |
+| P24 | R7 | 4 kg; urbana; normal; d5; OTRO | Error por cupon desconocido | Cupon desconocido |
+| P25 | R5, R8 | 4 kg; urbana; vip; d6; sin cupon | $9.650 -> $9.700 | Fin de semana y redondeo |
+| P26 | R6, R8 | 2 kg; urbana; vip; d5; ENVIO10 | $4.590 -> minimo $5.000 | Minimo |
+| P27 | R4–R8 | 4 kg; rural; vip; d6; ENVIO10 | $9.917,75 -> $9.900 | Combinacion de reglas |
+| P28 | R3 | 2,99 kg; urbana; normal; d5; sin cupon | $6.000 | Limite L1 |
+| P29 | R3 | 9,99 kg; urbana; normal; d5; sin cupon | $9.000 | Limite L2 |
+| P30 | R3, R8 | 10,01 kg; urbana; normal; d5; sin cupon | Base $9.008; final $9.000 | Limite L2 |
+| P31 | R3, R8 | 49,99 kg; urbana; normal; d5; sin cupon | Base $40.992; final $41.000 | Limite PMAX |
 ###### **3.5 Calculos detallados de resultados esperados**
 
 
