@@ -1,20 +1,33 @@
 # Changelog
 
-All notable changes to this project are recorded here.
+All notable changes to this project are documented in this file.
 
-## [2.1.0] - CAMBIO=1 empresarial
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows Semantic Versioning.
 
-- Add 12% discount for the `empresarial` customer.
-- Waive the zone surcharge for empresarial shipments strictly above 10 kg.
-- Preserve all R1-R8 calculations and pass the 37-test regression suite.
+## [2.1.0] - 2026-11-11
 
-## [2.0.0] - Refactor R1-R8
+### Added
 
-- Validate weight, zone, day, and coupon according to Jhon's parameters.
-- Apply weekend charges after sequential discounts.
-- Use Decimal and half-up rounding to the nearest 100 pesos.
-- Extract calculation responsibilities and add the zone Strategy pattern.
+- Added the empresarial customer with a 12% discount.
+- Waived the zone surcharge for empresarial shipments strictly above 10 kg.
+- Added four change-specific cases and retained the full regression suite.
 
-## [1.0.0] - Heredado
+## [2.0.0] - 2026-11-11
 
-- Preserve the original personalized calculator as the baseline for defect analysis.
+### Changed
+
+- Refactored the calculation into validation, tariff, zone strategy, discount, and rounding responsibilities.
+- Changed monetary arithmetic to `Decimal` with half-up rounding to the nearest 100 pesos.
+- Removed the inherited `flag` argument; this is a breaking change to the public function signature.
+
+### Fixed
+
+- Corrected validation for weight, zone, day, and unknown coupons.
+- Applied the Saturday and Sunday surcharge after discounts.
+- Corrected rounding and preserved the $5,000 minimum.
+
+## [1.0.0] - 2026-11-11
+
+### Added
+
+- Preserved the personalized inherited calculator as the baseline for defect analysis.

@@ -564,11 +564,39 @@ flowchart TD
 
 ##### **4.2 Complejidad ciclomática**
 
-Se cuentan 14 predicados binarios, separando las dos condiciones de validacion del peso (`peso <= 0` y `peso > PMAX`). La complejidad ciclomática es `V(G) = P + 1 = 14 + 1 = 15`. Se requieren 15 caminos independientes para recorrer las salidas de las decisiones del metodo heredado.
+El grafo tiene 29 nodos y 42 aristas. Se cuentan 14 predicados binarios: las dos condiciones de validación del peso (`p <= 0` y `p > PMAX`), los dos límites de tarifa, las tres comparaciones de zona, el día, los dos tipos de cliente, la presencia y validez del cupón, el mínimo y `flag`.
+
+La complejidad se comprueba de tres maneras:
+
+1. `V(G) = E − N + 2 = 42 − 29 + 2 = 15`.
+2. `V(G) = P + 1 = 14 + 1 = 15`.
+3. El grafo tiene 15 regiones, por lo que `V(G) = 15`.
+
+Las tres medidas coinciden. Por tanto, se identifican 15 caminos independientes para el método heredado.
 
 ##### **4.3 Caminos independientes**
 
-La columna observado se obtuvo ejecutando cada recorrido sobre `envios_heredado.py`. Las dos diferencias entre esperado y observado se conservaron como defectos, no se cambiaron los resultados esperados.
+La siguiente base identifica el camino de referencia y las alternativas que ejercitan las salidas de las decisiones del grafo. WB01–WB15 son los recorridos ejecutados contra `envios_heredado.py`; las diferencias entre esperado y observado se conservaron como defectos.
+
+| Camino | Recorrido que lo distingue | Caso asociado |
+| --- | --- | --- |
+| C01 | Peso válido, primer tramo, zona urbana, día hábil, cliente normal, sin cupón, sobre el mínimo, `flag=False` | WB01 |
+| C02 | Peso igual a 0: salida de error por límite inferior | WB02 |
+| C03 | Peso mayor que PMAX: salida de error por límite superior | WB03 |
+| C04 | Peso en el segundo tramo | WB04 |
+| C05 | Peso superior a L2: tarifa proporcional | WB05 |
+| C06 | Selección de zona rural | WB06 |
+| C07 | Selección de zona nacional | WB07 |
+| C08 | Zona fuera del catálogo: ninguna rama de zona coincide | WB08 |
+| C09 | Día de fin de semana: se suma recargo | WB09 |
+| C10 | Cliente frecuente: se aplica su descuento | WB10 |
+| C11 | Cliente VIP: se aplica su descuento | WB11 |
+| C12 | Cupón presente pero desconocido: rama de cupón no válido | WB12 |
+| C13 | Cupón ENVIO10: rama de cupón válido | WB13 |
+| C14 | El subtotal cae por debajo del mínimo | WB14 |
+| C15 | `flag=True`: se ejecuta la impresión de diagnóstico | WB15 |
+
+La complejidad y la tabla documentan los caminos y sus casos; no se interpreta el 100 % de cobertura como prueba de que la lógica sea correcta.
 
 | ID | Entrada o rama principal | Esperado | Observado en heredado |
 | --- | --- | --- | --- |
@@ -604,15 +632,17 @@ La suite automatizada contiene 32 casos de caja negra (`registro_heredado.py`) y
 
 ##### **5.2 Registro de defectos del codigo heredado**
 
-| ID | Defecto observado | Requisito | Severidad / prioridad | Casos relacionados |
-| --- | --- | --- | --- | --- |
-| DEF-01 | El mensaje de peso no incluye la tilde exigida | R1 | Baja / P3 | P01, P02 |
-| DEF-02 | Una zona desconocida recibe una tarifa | R2 | Alta / P1 | P10, WB08 |
-| DEF-03 | Se aceptan dias fuera del rango 1–7 | R2 | Alta / P1 | P11, P12, P13 |
-| DEF-04 | El sabado no recibe el recargo de fin de semana | R5 | Alta / P1 | P18, P25, P27 |
-| DEF-05 | El recargo del domingo se aplica antes del descuento | R5, R6 | Media / P2 | P32 |
-| DEF-06 | El resultado se trunca en vez de redondearse al centenar mas cercano | R8 | Media / P2 | P07, P14, P19, P20, P22, P23, P31 |
-| DEF-07 | Un cupon desconocido se acepta en vez de generar error | R7 | Alta / P1 | P24, WB12 |
+Los niveles se asignan por el efecto del fallo: **Alta** cuando se acepta una entrada que debía rechazarse o se cobra una tarifa de negocio incorrecta; **Media** cuando el total es incorrecto en una condición específica; **Baja** cuando solo difiere el texto del error. P1 requiere corregir antes de liberar; P2 afecta resultados de casos concretos; P3 tiene impacto visual o de mensaje limitado.
+
+| ID | Requisito | Reproducción | Resultado esperado | Observado en heredado | Severidad / prioridad y motivo |
+| --- | --- | --- | --- | --- | --- |
+| DEF-01 | R1 | P01: `calc(0, "urbana", "normal", 3)` | `ValueError("peso inválido")` | `ValueError("peso invalido")`, sin tilde | Baja / P3: el rechazo ocurre, pero el mensaje no coincide literalmente con R1. |
+| DEF-02 | R2 | P10: `calc(2, "costera", "normal", 3)` | Error por zona inválida | Devuelve `$6.000` | Alta / P1: zona no autorizada produce un cobro. |
+| DEF-03 | R2 | P11: `calc(2, "rural", "normal", 0)` | Error por día inválido | Devuelve una tarifa | Alta / P1: acepta fechas fuera del rango permitido. |
+| DEF-04 | R5 | P18: `calc(4, "urbana", "normal", 6)` | `$11.000` | `$9.000` | Alta / P1: omite el recargo obligatorio del sábado. |
+| DEF-05 | R5, R6 | P32: `calc(4, "urbana", "vip", 7)` | `$9.700` | `$9.300` | Media / P2: aplica el recargo antes del descuento y trunca el total. |
+| DEF-06 | R8 | P14: `calc(4, "rural", "normal", 5)` | `$10.400` | `$10.300` | Media / P2: el truncamiento altera el precio final. |
+| DEF-07 | R7 | P24: `calc(4, "urbana", "normal", 5, "OTRO")` | Error por cupón desconocido | Devuelve `$9.000` | Alta / P1: acepta un cupón inválido en vez de rechazar la solicitud. |
 
 ##### **5.3 Metricas de la ejecucion inicial**
 
@@ -622,6 +652,9 @@ La suite automatizada contiene 32 casos de caja negra (`registro_heredado.py`) y
 | Casos aprobados | 26 (55,32 %) | 26 / 47 × 100 |
 | Casos fallidos | 21 (44,68 %) | Resultados distintos de la especificacion |
 | Defectos unicos registrados | 7 | Causas distintas agrupadas por requisito |
+| Defectos de severidad alta / media / baja | 4 / 2 / 1 | Clasificación de DEF-01 a DEF-07 |
+| LOC de `envios_heredado.py` | 37 | Líneas no vacías ni comentarios, con el mismo criterio para todos los módulos |
+| Densidad de defectos | 18,92 por 100 LOC | 7 defectos / 37 LOC × 100 |
 | Cobertura de sentencias | 100 % (29/29) | Version heredada, ejecucion conjunta |
 | Cobertura de ramas | 100 % (26/26) | Version heredada, ejecucion conjunta |
 
@@ -631,14 +664,16 @@ Los fallos del codigo heredado quedaron reproducidos antes de la correccion. El 
 
 ##### **6.1 Malos olores y deuda técnica del código heredado**
 
-| Mal olor | Evidencia en `envios_heredado.py` | Deuda técnica |
+Los números de línea corresponden a `envios_heredado.py` en la etiqueta `v1.0.0`.
+
+| Mal olor técnico | Evidencia y líneas | Deuda técnica |
 | --- | --- | --- |
-| Método largo | `calc` valida datos, calcula tarifa, aplica recargos, descuentos, mínimo, impresión y redondeo | Un cambio de regla obliga a revisar responsabilidades distintas en una sola función |
-| Nombres crípticos | `p`, `z`, `c`, `d`, `cup`, `t` y `flag` | El lector debe deducir el significado de cada dato |
-| Números mágicos | Tarifas, límites, tasas, mínimo y unidad de redondeo aparecen dentro del cálculo | Se dificulta actualizar una regla sin omitir otros lugares |
-| Condicional por zona | La función contiene ramas separadas para urbana, rural y nacional | Agregar una estrategia de zona aumenta las ramas del método principal |
-| Bandera de diagnóstico | `flag` hace que la función de negocio imprima en la consola | El cálculo y la presentación quedan acoplados |
-| Aritmética binaria | Los descuentos y recargos usan `float` | Los importes decimales pueden acumular errores antes de redondear |
+| Long Method | `calc`, líneas 12–50 | Una función concentra validación, precio, recargos, descuentos, mínimo, impresión y redondeo. |
+| Long Parameter List | Firma de `calc`, línea 12: seis parámetros | Las llamadas son fáciles de confundir y la función recibe datos de varias responsabilidades. |
+| Cryptic Names | `p`, `z`, `c`, `d`, `cup`, `t`, líneas 12–50 | El lector debe inferir qué representa cada variable. |
+| Magic Numbers | Tarifas y límites, líneas 17–21, 26, 28, 35, 42, 45 y 50 | Los valores de negocio quedan dispersos y son difíciles de cambiar de forma segura. |
+| Flag Argument / función de diagnóstico acoplada | `flag` en línea 12 y `if flag`/`print` en líneas 47–48 | Una opción cambia la salida secundaria y mezcla cálculo con presentación. |
+| Primitive Obsession / uso de `float` para dinero | Tasas y operaciones de importe en líneas 25–28, 35, 38 y 42 | La aritmética binaria puede representar importes decimales con aproximación y afectar el redondeo. |
 
 ##### **6.2 Cambios realizados y tipo de mantenimiento**
 
@@ -655,9 +690,38 @@ Los fallos del codigo heredado quedaron reproducidos antes de la correccion. El 
 
 `EstrategiaZona` define la operación `aplicar`. `SinRecargo` conserva el importe urbano y permite representar la exención empresarial. `RecargoPorcentual` aplica la tasa rural o nacional. `ESTRATEGIAS_ZONA` relaciona cada zona válida con su estrategia. La función `calc` selecciona la estrategia adecuada y mantiene el resto del cálculo en el mismo orden de R1–R8.
 
+```mermaid
+classDiagram
+    class EstrategiaZona {
+        <<interface>>
+        +aplicar(tarifa) Decimal
+    }
+    class SinRecargo {
+        +aplicar(tarifa) Decimal
+    }
+    class RecargoPorcentual {
+        +tasa Decimal
+        +aplicar(tarifa) Decimal
+    }
+    class calc {
+        +seleccionar estrategia por zona y cliente
+    }
+    EstrategiaZona <|.. SinRecargo
+    EstrategiaZona <|.. RecargoPorcentual
+    calc --> EstrategiaZona : utiliza
+```
+
 ##### **6.4 Regresión y comparación de métricas**
 
-La versión heredada se ejecutó con 47 casos: 26 aprobados, 21 fallidos y siete causas de defecto. La versión corregida base aprobó los 32 casos R1–R8. Después del cambio empresarial, la suite final contiene 37 pruebas: 32 de caja negra, cuatro del cambio y una validación adicional de peso no numérico. Las 37 pasaron; Coverage.py midió 55/55 sentencias y 18/18 ramas, ambas al 100 %.
+La versión heredada se ejecutó con 47 casos: 26 aprobados y 21 fallidos. La versión final pasó 37 de 37 pruebas. La comparación se limita a la función pública `calc` para complejidad y a los módulos de cálculo para LOC; la cobertura corresponde a cada módulo medido por Coverage.py.
+
+| Métrica | Heredado | Refactorizado y cambio empresarial | Interpretación |
+| --- | --- | --- | --- |
+| Complejidad ciclomática de `calc` | 15 | 3 | El método principal pasó de 14 predicados a dos decisiones; la lógica extraída se mide en funciones auxiliares. |
+| LOC del módulo (no vacías ni comentarios) | 37 | 86 | El tamaño aumentó al extraer funciones, tipos y estrategias; la separación reduce responsabilidades por función. |
+| Cobertura de sentencias | 29/29 (100 %) | 55/55 (100 %) | Ambas versiones recorrieron todas las sentencias medidas. |
+| Cobertura de ramas | 26/26 (100 %) | 18/18 (100 %) | Se cubrieron las alternativas medidas de cada versión; una cobertura completa no demuestra por sí sola corrección. |
+| Resultado de pruebas | 26/47 aprobadas; 21 fallidas | 37/37 aprobadas | Los defectos registrados se reprodujeron primero y la regresión final pasó. |
 
 #### **Parte 7 — Control de versiones y publicación**
 
@@ -675,9 +739,11 @@ La versión heredada se ejecutó con 47 casos: 26 aprobados, 21 fallidos y siete
 
 La implementacion R1-R8 y las pruebas quedaron consolidadas en `581933d`; por eso las ramas `fix/DEF-*`, `refactor/estrategia` y `test/suite` apuntan a ese commit, que ya forma parte de `main`. No se reescribio el historial para simular siete commits de correccion separados. La solicitud empresarial si conserva pruebas primero (`8db9081`) y luego codigo (`3eef8c9`), integrada mediante el merge `991a6c5`.
 
+La etiqueta `v2.0.0` es mayor porque la refactorización elimina el parámetro público `flag` de la función heredada, lo que rompe compatibilidad con llamadas que lo usaban. `v2.1.0` es menor porque añade el tipo de cliente empresarial sin cambiar la firma ni las llamadas existentes. Las ramas por defecto y las etiquetas están publicadas; las ramas de defectos son referencias al cambio consolidado, no siete integraciones separadas.
+
 ##### **7.2 Changelog y publicación**
 
-Los cambios resumidos por versión están en `CHANGELOG.md`. `v1.0.0` conserva la línea base, `v2.0.0` incorpora las correcciones y refactorización R1–R8, y `v2.1.0` agrega la regla empresarial. Las instrucciones para repetir las pruebas y ver el historial son:
+Los cambios resumidos por versión están en `CHANGELOG.md`, con fecha y categorías `Added`, `Changed` y `Fixed`, siguiendo Keep a Changelog. `v1.0.0` conserva la línea base, `v2.0.0` incorpora las correcciones y refactorización R1–R8, y `v2.1.0` agrega la regla empresarial. Las instrucciones para repetir las pruebas y ver el historial son:
 
 ```powershell
 uv pip install --python .venv\Scripts\python.exe -r requirements.txt
@@ -691,7 +757,7 @@ La salida de `git log --oneline --graph --all` se conserva como evidencia del hi
 
 ##### **8.1 Solicitud personalizada CAMBIO=1**
 
-La selección se obtiene de `(A + C) mod 3 = (4 + 0) mod 3 = 1`. Para el cliente `empresarial` se aplica un descuento del 12 %. Si su peso es estrictamente mayor que L2 = 10 kg, no se aplica recargo de zona. Con peso igual a 10 kg, el recargo de zona sí se aplica. Se conservan las validaciones, el orden del cupón, el recargo de fin de semana, el mínimo y el redondeo de R1–R8.
+La selección se obtiene de `(A + F) mod 3 = (4 + 9) mod 3 = 1`. Para el cliente `empresarial` se aplica un descuento del 12 %. Si su peso es estrictamente mayor que L2 = 10 kg, no se aplica recargo de zona. Con peso igual a 10 kg, el recargo de zona sí se aplica. Se conservan las validaciones, el orden del cupón, el recargo de fin de semana, el mínimo y el redondeo de R1–R8.
 
 ##### **8.2 Impacto sobre requisitos y pruebas**
 
@@ -712,5 +778,9 @@ La selección se obtiene de `(A + C) mod 3 = (4 + 0) mod 3 = 1`. Para el cliente
 | SC-04 | 11 kg, nacional, empresarial, domingo, ENVIO10 | Base $9.800; × 0,88 × 0,90 + $2.000 = $9.761,60 | $9.800 |
 
 Las cuatro pruebas SC-01 a SC-04 y los 33 casos anteriores aprobaron: 37 de 37. La cobertura final fue 100 % de sentencias y ramas. El caso adicional de peso no numérico comprueba que la entrada inválida se convierta en `ValueError`.
+
+##### **8.4 Tipo de mantenimiento**
+
+La solicitud empresarial es **mantenimiento adaptativo**: el sistema se ajusta a una nueva regla del negocio y a un nuevo tipo de cliente. La incorporación de pruebas y del mapa de descuentos también incluye trabajo perfectivo porque mantiene la lógica más fácil de extender; el comportamiento empresarial se considera validado por SC-01 a SC-04 y la regresión completa.
 
 
